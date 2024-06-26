@@ -1,0 +1,12 @@
+{
+  "required": true,
+  "package": "dev.mattidragon.polydexbridge.mixin",
+  "compatibilityLevel": "JAVA_21",
+  "mixins": [
+    "PlayerManagerMixin",
+    "PolydexImplMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+	}
+}
