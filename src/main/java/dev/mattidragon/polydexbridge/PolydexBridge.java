@@ -2,10 +2,8 @@ package dev.mattidragon.polydexbridge;
 
 import dev.mattidragon.polydexbridge.data.BridgeCategory;
 import dev.mattidragon.polydexbridge.data.BridgeRecipe;
-import eu.pb4.polydex.impl.PolydexImpl;
+import eu.pb4.polydex.api.v1.recipe.PolydexPageUtils;
 import net.fabricmc.api.ModInitializer;
-
-import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.fabricmc.fabric.api.networking.v1.ServerConfigurationConnectionEvents;
 import net.fabricmc.fabric.api.networking.v1.ServerConfigurationNetworking;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
@@ -15,7 +13,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
-import java.util.List;
 
 public class PolydexBridge implements ModInitializer {
     public static final Logger LOGGER = LoggerFactory.getLogger("PolydexBridge");
@@ -29,11 +26,21 @@ public class PolydexBridge implements ModInitializer {
 		ServerConfigurationConnectionEvents.CONFIGURE.register((handler, server) -> {
 			ServerConfigurationNetworking.send(handler, BridgeEnablePacket.INSTANCE);
 		});
+		
+		PolydexPageUtils.AFTER_PAGE_LOADING.register(PolydexBridge::sendRecipes);
 	}
-	
+
+	private static void sendRecipes(MinecraftServer server) {
+		for (var player : server.getPlayerManager().getPlayerList()) {
+			if (ServerPlayNetworking.canSend(player, PolydexRecipesPacket.ID)) {
+				ServerPlayNetworking.send(player, createPacket(player));
+			}
+		}
+	}
+
 	public static PolydexRecipesPacket createPacket(ServerPlayerEntity player) {
 		var recipes = new ArrayList<BridgeRecipe>();
-		for (var page : PolydexImpl.ID_TO_PAGE.values()) {
+		for (var page : PolydexPageUtils.getAllPages()) {
 			var categories = page.categories()
 					.stream()
 					.filter(category -> !category.identifier().getNamespace().equals("minecraft"))
@@ -57,13 +64,5 @@ public class PolydexBridge implements ModInitializer {
 			));
 		}
 		return new PolydexRecipesPacket(recipes);
-	}
-
-	public static void sendRecipes(MinecraftServer server) {
-		for (var player : server.getPlayerManager().getPlayerList()) {
-			if (ServerPlayNetworking.canSend(player, PolydexRecipesPacket.ID)) {
-                ServerPlayNetworking.send(player, createPacket(player));
-            }
-		}
 	}
 }

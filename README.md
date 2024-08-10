@@ -13,8 +13,8 @@ It should be able to properly bring over most polydex recipes, and it provides d
 like the recipe tree.
 
 ## Compatibility
-This mod uses internals of both Polydex and EMI in order to implement recipe syncing.
-A future update to either mod could easily break PolydexBridge. 
+This mod uses internals of EMI in order to implement recipe syncing.
+A future update to it could easily break PolydexBridge. 
 If that happens the issue should be reported on this mods GitHub Page.
 
 Using different versions of PolydexBridge on the client and server is not supported,
